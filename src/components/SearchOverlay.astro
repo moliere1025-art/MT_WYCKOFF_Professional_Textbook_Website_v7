@@ -1,0 +1,13 @@
+<dialog class="search-overlay" data-search-dialog aria-labelledby="search-title">
+  <div class="search-overlay__bar">
+    <p class="eyebrow" id="search-title">COURSE INDEX</p>
+    <button class="icon-button" type="button" data-search-close aria-label="关闭搜索">×</button>
+  </div>
+  <label class="search-field">
+    <span class="sr-only">搜索课程内容</span>
+    <input data-search-input type="search" placeholder="搜索概念、事件或章节……" autocomplete="off" />
+    <kbd>ESC</kbd>
+  </label>
+  <p class="search-overlay__hint" data-search-status>例如：Spring、Cause、相对强弱、仓位、失败结构</p>
+  <div class="search-results" data-search-results aria-live="polite"></div>
+</dialog>

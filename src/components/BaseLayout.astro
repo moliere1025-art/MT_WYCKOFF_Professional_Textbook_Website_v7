@@ -1,0 +1,41 @@
+---
+import "../styles/global.css";
+import SearchOverlay from "./SearchOverlay.astro";
+import FigureDialog from "./FigureDialog.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  pageClass?: string;
+}
+
+const {
+  title,
+  description = "MT Trading Studio · Wyckoff 专业交易方法学生教材",
+  pageClass = ""
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f3f0e8" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body class={pageClass}>
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <slot />
+    <SearchOverlay />
+    <FigureDialog />
+    <button class="back-to-top" type="button" data-back-to-top aria-label="回到页面顶部">
+      <span aria-hidden="true">↑</span><small>TOP</small>
+    </button>
+    <script>
+      import "../scripts/site";
+    </script>
+  </body>
+</html>

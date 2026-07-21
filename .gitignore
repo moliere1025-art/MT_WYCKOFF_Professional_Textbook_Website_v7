@@ -1,0 +1,5 @@
+node_modules/
+.astro/
+review/
+.DS_Store
+*.log

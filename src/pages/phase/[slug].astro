@@ -1,0 +1,45 @@
+---
+import BaseLayout from "../../components/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import { course, getPhaseChapters, padChapter, type Phase } from "../../lib/course";
+
+export function getStaticPaths() { return course.phases.map((phase) => ({ params: { slug: phase.slug }, props: { phase } })); }
+interface Props { phase: Phase }
+const { phase } = Astro.props;
+const chapters = getPhaseChapters(phase);
+const interlude = course.interludes.find((item) => item.beforeChapter === chapters[0]?.number);
+const interludeHeading = interlude?.blocks.find((block) => block.type === "heading")?.text || phase.statement;
+const interludeParagraphs = interlude?.blocks.filter((block) => block.type === "paragraph") || [];
+const briefCopy = interludeParagraphs.length ? interludeParagraphs.map((block) => block.text) : [phase.statement, `本阶段由第 ${padChapter(chapters[0].number)}—${padChapter(chapters.at(-1)!.number)} 章构成，章节按证据、结构与应用的顺序推进。`];
+const representativeImage = chapters.flatMap((chapter) => chapter.blocks).find((block) => block.type === "image");
+const emphasisBreak = interludeHeading.lastIndexOf("到") > 0 ? interludeHeading.lastIndexOf("到") + 1 : interludeHeading.indexOf("，") + 1;
+const briefLead = emphasisBreak > 0 ? interludeHeading.slice(0, emphasisBreak) : "";
+const briefEmphasis = emphasisBreak > 0 ? interludeHeading.slice(emphasisBreak) : interludeHeading;
+---
+
+<BaseLayout title={`${phase.title} · MT WYCKOFF`} description={phase.statement} pageClass={`phase-page phase-${phase.number}`}>
+  <SiteHeader location={`PHASE ${phase.roman} · ${phase.english}`} />
+  <main id="main-content">
+    <section class="phase-hero">
+      <div class="phase-hero__index"><span>PHASE</span><strong>{String(phase.number).padStart(2, "0")}</strong><small>/ 06</small></div>
+      <div class="phase-hero__copy"><p class="eyebrow">{phase.english} · STUDY SEQUENCE</p><h1>{phase.title}</h1><p class="phase-hero__statement">{phase.statement}</p></div>
+      <aside class="phase-hero__meta"><p class="eyebrow">SCOPE</p><dl><div><dt>CHAPTERS</dt><dd>{padChapter(chapters[0].number)}—{padChapter(chapters.at(-1)!.number)}</dd></div><div><dt>COUNT</dt><dd>{String(chapters.length).padStart(2, "0")}</dd></div><div><dt>NEXT</dt><dd>{chapters[0].title}</dd></div></dl></aside>
+      <nav class="phase-hero__preview" aria-label="阶段章节预览">
+        {chapters.map((chapter, index) => <a href={`/chapter/${chapter.slug}/`}><span>{padChapter(chapter.number)}</span><small>STEP {String(index + 1).padStart(2, "0")}</small><strong>{chapter.title}</strong><b aria-hidden="true">→</b></a>)}
+      </nav>
+      {representativeImage?.src && <figure class="phase-hero__plate"><img src={representativeImage.src} width={representativeImage.width} height={representativeImage.height} alt={representativeImage.alt || representativeImage.caption || "本阶段代表图"} /><figcaption><span>PHASE PLATE</span><p>{representativeImage.caption}</p></figcaption></figure>}
+    </section>
+
+    <section class="phase-brief">
+      <div><p class="eyebrow">PHASE BRIEF</p><h2>{briefLead && <span>{briefLead}</span>}<strong>{briefEmphasis}</strong></h2></div>
+      <div class="phase-brief__copy">{briefCopy.slice(0, 4).map((text) => <p>{text}</p>)}</div>
+    </section>
+
+    <section class="phase-chapters" aria-labelledby="phase-chapters-title">
+      <header><p class="eyebrow">CHAPTER SEQUENCE</p><h2 id="phase-chapters-title">本阶段章节</h2><p>按顺序阅读，建立从观察到行动的连续推理。</p></header>
+      <ol>{chapters.map((chapter, index) => <li><a href={`/chapter/${chapter.slug}/`}><span>{padChapter(chapter.number)}</span><div><small>STEP {String(index + 1).padStart(2, "0")}</small><strong>{chapter.title}</strong></div><span aria-hidden="true">→</span></a></li>)}</ol>
+    </section>
+
+    <nav class="phase-navigation" aria-label="阶段导航"><a href="/course/">← 返回课程总览</a>{course.phases[phase.number] && <a href={`/phase/${course.phases[phase.number].slug}/`}>下一阶段 →</a>}</nav>
+  </main>
+</BaseLayout>

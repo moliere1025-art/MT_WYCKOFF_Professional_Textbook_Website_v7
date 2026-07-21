@@ -1,0 +1,26 @@
+---
+import { chapterNeighbors, padChapter, type Chapter } from "../lib/course";
+interface Props { chapter: Chapter }
+const { chapter } = Astro.props;
+const { previous, next } = chapterNeighbors(chapter);
+---
+
+<nav class="chapter-nav" aria-label="章节导航">
+  {previous ? (
+    <a class="chapter-nav__item" href={`/chapter/${previous.slug}/`} rel="prev">
+      <span class="eyebrow">PREVIOUS · {padChapter(previous.number)}</span>
+      <strong>{previous.title}</strong>
+    </a>
+  ) : <span></span>}
+  {next ? (
+    <a class="chapter-nav__item chapter-nav__item--next" href={`/chapter/${next.slug}/`} rel="next">
+      <span class="eyebrow">NEXT · {padChapter(next.number)}</span>
+      <strong>{next.title}</strong>
+    </a>
+  ) : (
+    <a class="chapter-nav__item chapter-nav__item--next" href="/course/">
+      <span class="eyebrow">COMPLETE</span>
+      <strong>返回课程总览</strong>
+    </a>
+  )}
+</nav>

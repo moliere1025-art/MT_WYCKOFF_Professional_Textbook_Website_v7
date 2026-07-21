@@ -1,0 +1,101 @@
+---
+import { getEditorialRoleLabel, type ChapterSection as ChapterSectionType } from "../lib/course";
+
+interface Props {
+  section: ChapterSectionType;
+  chapterNumber: number;
+}
+
+const { section, chapterNumber } = Astro.props;
+const sectionNumber = section.title.match(/^(\d+\.\d+(?:\.\d+)?)/)?.[1] || `${chapterNumber}.${String(section.id).slice(-2)}`;
+const sectionTitle = section.title.replace(/^\d+\.\d+(?:\.\d+)?\s*/, "");
+const roleLabel = getEditorialRoleLabel(section.layout);
+const firstParagraph = section.blocks.find((block) => block.type === "paragraph")?.anchor;
+---
+
+<section class:list={["chapter-section", `chapter-section--${section.layout}`]} id={section.id} data-reader-section data-editorial-role={section.layout}>
+  <header class="chapter-section__header">
+    <div class="section-marker"><span>{sectionNumber}</span><small>{roleLabel}</small></div>
+    <h2>{sectionTitle}</h2>
+  </header>
+
+  <div class="chapter-section__body">
+    {section.blocks.map((block) => {
+      if (block.type === "paragraph") {
+        return <p class:list={["body-copy", { "body-copy--lead": block.anchor === firstParagraph }]} id={block.anchor} data-block-order={block.blockIndex}>{block.text}</p>;
+      }
+
+      if (block.type === "heading") {
+        return <h3 id={block.anchor}>{block.text}</h3>;
+      }
+
+      if (block.type === "eyebrow") {
+        return <p class="eyebrow" id={block.anchor}>{block.text}</p>;
+      }
+
+      if (block.type === "list") {
+        const List = block.ordered ? "ol" : "ul";
+        return (
+          <List class="text-list" id={block.anchor}>
+            {block.items?.map((item, index) => (
+              <li id={`${block.anchor}-i${String(index).padStart(2, "0")}`}>{item}</li>
+            ))}
+          </List>
+        );
+      }
+
+      if (block.type === "image") {
+        const ratio = (block.width || 1) / (block.height || 1);
+        return (
+          <figure class:list={["evidence-figure", { "evidence-figure--wide": ratio > 2.2 }]} id={block.anchor} data-figure-reveal>
+            <button
+              class="evidence-figure__image"
+              type="button"
+              data-figure-open
+              data-figure-src={block.src}
+              data-figure-caption={block.caption || block.alt || "课程图表"}
+              aria-label="放大查看图表"
+            >
+              <img
+                src={block.src}
+                width={block.width}
+                height={block.height}
+                alt={block.alt || block.caption || "课程图表"}
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+            <figcaption>
+              <span class="eyebrow">EVIDENCE PLATE</span>
+              <span>{block.caption}</span>
+              <small>点击图表查看细节</small>
+            </figcaption>
+          </figure>
+        );
+      }
+
+      if (block.type === "table") {
+        const [header, ...rows] = block.rows || [];
+        return (
+          <div class="research-table" id={block.anchor} data-table-wrap>
+            <p class="research-table__hint">横向滚动查看完整表格 <span aria-hidden="true">→</span></p>
+            <div class="research-table__scroll" tabindex="0">
+              <table>
+                {header && <thead><tr>{header.map((cell) => <th scope="col">{cell}</th>)}</tr></thead>}
+                <tbody>
+                  {rows.map((row) => <tr>{row.map((cell, index) => index === 0 ? <th scope="row">{cell}</th> : <td>{cell}</td>)}</tr>)}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      }
+
+      if (block.type === "caption") {
+        return <p class="table-caption" id={block.anchor}>{block.text}</p>;
+      }
+
+      return null;
+    })}
+  </div>
+</section>

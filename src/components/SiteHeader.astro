@@ -1,0 +1,21 @@
+---
+interface Props {
+  location?: string;
+  transparent?: boolean;
+}
+
+const { location = "专业交易教材", transparent = false } = Astro.props;
+---
+
+<header class:list={["site-header", { "site-header--transparent": transparent }]}>
+  <a class="wordmark" href="/course/" aria-label="MT Wyckoff 课程首页">
+    <span class="wordmark__mt">MT</span>
+    <span class="wordmark__wyckoff">WYCKOFF</span>
+  </a>
+  <p class="site-header__location">{location}</p>
+  <div class="site-header__actions">
+    <button class="icon-button" type="button" data-search-open aria-label="打开课程搜索">
+      <span aria-hidden="true">⌕</span>
+    </button>
+  </div>
+</header>

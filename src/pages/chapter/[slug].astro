@@ -1,0 +1,58 @@
+---
+import BaseLayout from "../../components/BaseLayout.astro";
+import ChapterIntro from "../../components/ChapterIntro.astro";
+import ChapterNav from "../../components/ChapterNav.astro";
+import ChapterSection from "../../components/ChapterSection.astro";
+import ReaderHeader from "../../components/ReaderHeader.astro";
+import ReaderSidebar from "../../components/ReaderSidebar.astro";
+import { chapterPartForSection, chapterSections, course, getChapterDirection, getPhase, type Chapter } from "../../lib/course";
+
+export function getStaticPaths() {
+  return course.chapters.map((chapter) => ({ params: { slug: chapter.slug }, props: { chapter } }));
+}
+
+interface Props { chapter: Chapter }
+const { chapter } = Astro.props;
+const phase = getPhase(chapter.phase)!;
+const sections = chapterSections(chapter);
+const direction = getChapterDirection(chapter.number);
+---
+
+<BaseLayout title={`${chapter.title} · MT WYCKOFF`} description={`第${chapter.number}章：${chapter.title}`} pageClass={`reader-page phase-${chapter.phase} chapter-direction--${direction.slug}`}>
+  <div class="reading-progress" aria-hidden="true"><span data-reading-progress></span></div>
+  <div class="reader-shell" data-reader-root data-chapter={chapter.number} data-phase={chapter.phase} data-chapter-title={chapter.title}>
+    <ReaderSidebar chapter={chapter} />
+    <div class="reader-stage" data-chapter-direction={direction.slug} data-chapter-emphasis={direction.emphasis}>
+      <ReaderHeader chapter={chapter} />
+      <main id="main-content" class="reader-main">
+        <ChapterIntro chapter={chapter} />
+        <section class="chapter-content" aria-labelledby="chapter-body-title">
+          <h2 class="sr-only" id="chapter-body-title">{chapter.title}正文</h2>
+          {sections.map((section) => {
+            const part = chapterPartForSection(chapter.number, section.title);
+            return (
+              <>
+                {part && (
+                  <header class="chapter-part" aria-label={`Part ${part.number}: ${part.title}`}>
+                    <p>PART {part.number}</p>
+                    <h2>{part.title}</h2>
+                    <span>{part.note}</span>
+                  </header>
+                )}
+                <ChapterSection section={section} chapterNumber={chapter.number} />
+              </>
+            );
+          })}
+        </section>
+        <ChapterNav chapter={chapter} />
+        <footer class="reader-footer">
+          <span>MT TRADING STUDIO</span>
+          <span>{phase.english} · {String(chapter.number).padStart(2, "0")}</span>
+        </footer>
+      </main>
+    </div>
+  </div>
+  <script>
+    import "../../scripts/reader";
+  </script>
+</BaseLayout>

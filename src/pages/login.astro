@@ -1,0 +1,27 @@
+---
+import BaseLayout from "../components/BaseLayout.astro";
+---
+
+<BaseLayout title="登录 · MT WYCKOFF" pageClass="login-page">
+  <main id="main-content" class="login-shell">
+    <header class="login-header"><a class="wordmark wordmark--login" href="/login/"><span class="wordmark__mt">MT</span><span class="wordmark__wyckoff">WYCKOFF</span></a><p>PROFESSIONAL TRADING TEXTBOOK · V5.1</p></header>
+
+    <section class="login-intro">
+      <div class="login-intro__copy"><p class="eyebrow">INSTITUTIONAL STUDY MANUAL · 24 CHAPTERS</p><h1>把市场观察，<br /><span>变成可复核的决策。</span></h1><p>围绕证据、结构、执行与治理建立的 Wyckoff 专业数字教材。</p></div>
+      <figure><img src="/course-assets/figures/image2.png" width="2298" height="1420" alt="SOS 与 LPS 价格成交量序列图" /><figcaption><span>STUDY PLATE 01</span><p>Evidence before interpretation.</p></figcaption></figure>
+      <dl><div><dt>FORMAT</dt><dd>Digital textbook</dd></div><div><dt>COURSE</dt><dd>06 phases · 24 chapters</dd></div><div><dt>EDITION</dt><dd>Student / 2026</dd></div></dl>
+    </section>
+
+    <section class="login-panel" aria-labelledby="login-title">
+      <div><p class="eyebrow">STUDENT ACCESS</p><h2 id="login-title">继续你的研究</h2><p>当前为课程界面验收版本；身份验证将在后端接入后启用。</p></div>
+      <form action="/course/" method="post" data-demo-login>
+        <label><span>学员账号</span><input type="email" name="email" placeholder="student@mtwyckoff.com" autocomplete="username" /></label>
+        <label><span>密码</span><input type="password" name="password" placeholder="••••••••" autocomplete="current-password" /></label>
+        <button class="primary-button" type="submit"><span>进入课程界面</span><span aria-hidden="true">↗</span></button>
+        <p class="login-panel__notice">DEMO ACCESS · 不会提交或保存账号信息</p>
+      </form>
+    </section>
+
+    <footer class="login-footer"><span>MT TRADING STUDIO</span><span>VERSION 5.1 · STUDENT EDITION</span></footer>
+  </main>
+</BaseLayout>

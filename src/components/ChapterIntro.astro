@@ -1,0 +1,56 @@
+---
+import { chapterIntro, chapterKeywords, chapterSections, estimateReadingTime, getChapterDirection, getPhase, padChapter, type Chapter } from "../lib/course";
+interface Props { chapter: Chapter }
+const { chapter } = Astro.props;
+const phase = getPhase(chapter.phase)!;
+const intro = chapterIntro(chapter);
+const sections = chapterSections(chapter);
+const keywords = chapterKeywords(chapter);
+const direction = getChapterDirection(chapter.number);
+const previewImage = chapter.blocks.find((block) => block.type === "image");
+const primaryIntro = intro[0]?.text || "";
+const editorialSentences = primaryIntro.match(/[^。！？；]+[。！？；]?/g)?.filter(Boolean) || [];
+let editorialLead = "";
+let editorialEmphasis = primaryIntro;
+
+if (editorialSentences.length > 1) {
+  editorialLead = editorialSentences.slice(0, -1).join("");
+  editorialEmphasis = editorialSentences.at(-1) || primaryIntro;
+} else {
+  const punctuationBreak = Math.max(primaryIntro.lastIndexOf("，"), primaryIntro.lastIndexOf("："));
+  if (punctuationBreak > primaryIntro.length * .38) {
+    editorialLead = primaryIntro.slice(0, punctuationBreak + 1);
+    editorialEmphasis = primaryIntro.slice(punctuationBreak + 1);
+  }
+}
+---
+
+<header class="chapter-intro" data-chapter-intro data-intro-emphasis={direction.emphasis}>
+  <div class="chapter-intro__meta">
+    <p>PHASE {phase.roman} · {phase.english}</p>
+    <p>{String(sections.length).padStart(2, "0")} SECTIONS</p>
+    <p>{estimateReadingTime(chapter)} MIN READ</p>
+  </div>
+  <div class="chapter-intro__rule" data-intro-rule></div>
+  <p class="chapter-intro__number" aria-hidden="true">{padChapter(chapter.number)}</p>
+  <div class="chapter-intro__copy">
+    <p class="eyebrow">CHAPTER {padChapter(chapter.number)} · {direction.label}</p>
+    <h1 class="chapter-intro__title">{chapter.title}</h1>
+    {intro[0] && (
+      <p id={`c${chapter.number}-b000`} class="chapter-intro__lede chapter-intro__lede--primary">
+        {editorialLead && <span>{editorialLead}</span>}<strong>{editorialEmphasis}</strong>
+      </p>
+    )}
+  </div>
+  {direction.emphasis === "image" && previewImage?.src && (
+    <figure class="chapter-intro__visual">
+      <img src={previewImage.src} width={previewImage.width} height={previewImage.height} alt={previewImage.alt || previewImage.caption || "本章核心证据图"} />
+      <figcaption><span>OPENING PLATE</span><p>{previewImage.caption}</p></figcaption>
+    </figure>
+  )}
+  <aside class="chapter-intro__notes" aria-label="章节导读">
+    {intro.slice(1).map((block, index) => <p id={`c${chapter.number}-b${String(index + 1).padStart(3, "0")}`}>{block.text}</p>)}
+    {keywords.length > 0 && <div><span class="eyebrow">KEY TERMS</span><p>{keywords.join(" · ")}</p></div>}
+    <button type="button" data-sidebar-open data-open-chapter-tab><span>查看完整章节结构</span><span aria-hidden="true">↗</span></button>
+  </aside>
+</header>

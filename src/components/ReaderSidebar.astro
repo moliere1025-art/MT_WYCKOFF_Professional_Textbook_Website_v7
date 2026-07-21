@@ -1,0 +1,106 @@
+---
+import { chapterSections, course, getPhase, padChapter, type Chapter } from "../lib/course";
+
+interface Props { chapter: Chapter }
+
+const { chapter } = Astro.props;
+const phase = getPhase(chapter.phase)!;
+const sections = chapterSections(chapter);
+---
+
+<nav class="reader-rail" aria-label="阶段快速导航">
+  <a class="reader-rail__mark" href="/course/" aria-label="MT Wyckoff 课程总览">MT</a>
+  <ol>
+    {course.phases.map((item) => (
+      <li class:list={{ "is-current": item.number === phase.number }}>
+        <a href={`/phase/${item.slug}/`} aria-label={`阶段 ${item.roman}：${item.title}`}>{item.roman}</a>
+      </li>
+    ))}
+  </ol>
+  <div class="reader-rail__location" aria-hidden="true">
+    <small>CH {padChapter(chapter.number)}</small>
+    <strong data-rail-section>01</strong>
+  </div>
+  <button type="button" data-sidebar-open aria-expanded="false" aria-controls="reader-index" aria-label="打开课程索引">
+    <span aria-hidden="true"></span><span aria-hidden="true"></span>
+  </button>
+  <div class="reader-rail__progress" aria-hidden="true"><span data-side-progress></span></div>
+</nav>
+
+<aside class="reader-sidebar" id="reader-index" data-sidebar aria-label="课程索引" aria-hidden="true" inert>
+  <div class="reader-sidebar__top">
+    <a class="wordmark wordmark--sidebar" href="/course/">
+      <span class="wordmark__mt">MT</span><span class="wordmark__wyckoff">WYCKOFF</span>
+    </a>
+    <p>COURSE INDEX</p>
+    <button class="icon-button reader-sidebar__close" type="button" data-sidebar-close aria-label="关闭课程索引">×</button>
+  </div>
+
+  <div class="reader-position">
+    <div>
+      <p class="eyebrow">PHASE {phase.roman} · {phase.english}</p>
+      <p class="reader-position__chapter">{padChapter(chapter.number)} <span>/ 24</span></p>
+    </div>
+    <p class="reader-position__title">{chapter.title}</p>
+  </div>
+
+  <div class="reader-sidebar__tabs" role="tablist" aria-label="索引视图">
+    <button type="button" role="tab" aria-selected="true" aria-controls="drawer-course" data-drawer-tab="course">全书</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="drawer-chapter" data-drawer-tab="chapter">本章</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="drawer-settings" data-drawer-tab="settings">阅读</button>
+  </div>
+
+  <div class="reader-sidebar__panel is-active" id="drawer-course" role="tabpanel" data-drawer-panel="course">
+    <nav class="course-tree" aria-label="全书章节">
+      {course.phases.map((item) => (
+        <details class="course-tree__phase" open={item.number === phase.number}>
+          <summary>
+            <span>{item.roman}</span>
+            <strong>{item.title}</strong>
+            <small>{String(item.chapterCount).padStart(2, "0")}</small>
+          </summary>
+          <ol>
+            {item.chapters.map((number) => {
+              const itemChapter = course.chapters.find((entry) => entry.number === number)!;
+              return (
+                <li class:list={{ "is-current": number === chapter.number }}>
+                  <a href={`/chapter/${itemChapter.slug}/`} aria-current={number === chapter.number ? "page" : undefined}>
+                    <span>{padChapter(number)}</span><span>{itemChapter.title}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        </details>
+      ))}
+    </nav>
+  </div>
+
+  <div class="reader-sidebar__panel" id="drawer-chapter" role="tabpanel" data-drawer-panel="chapter" hidden>
+    <nav class="section-tree" aria-label="本章小节">
+      <header class="section-tree__header">
+        <div><p class="eyebrow">CHAPTER STRUCTURE</p><p>本章阅读目录</p></div>
+        <p class="section-tree__counter"><strong data-sidebar-section>01</strong><span>/ {String(sections.length).padStart(2, "0")}</span></p>
+      </header>
+      <ol>
+        {sections.map((section, index) => (
+          <li><a href={`#${section.id}`} data-section-link={section.id}><span>{String(index + 1).padStart(2, "0")}</span>{section.title.replace(/^\d+\.\d+\s*/, "")}</a></li>
+        ))}
+      </ol>
+    </nav>
+  </div>
+
+  <div class="reader-sidebar__panel" id="drawer-settings" role="tabpanel" data-drawer-panel="settings" hidden>
+    <div class="reader-settings">
+      <p class="eyebrow">READING SCALE</p>
+      <div class="reader-tools">
+        <button type="button" data-font-size="down" aria-label="减小正文字号">A−</button>
+        <button type="button" data-font-size="reset" aria-label="恢复默认字号">A</button>
+        <button type="button" data-font-size="up" aria-label="增大正文字号">A+</button>
+      </div>
+      <button class="reader-settings__search" type="button" data-search-open><span>搜索全书</span><span aria-hidden="true">⌕</span></button>
+      <p>字号设置与阅读进度只保存在当前浏览器。</p>
+    </div>
+  </div>
+</aside>
+<button class="sidebar-scrim" type="button" data-sidebar-close aria-label="关闭课程索引" tabindex="-1"></button>
